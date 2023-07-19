@@ -18,6 +18,7 @@ using System.Diagnostics;
 using System.Threading.Tasks.Dataflow;
 using Azure.Storage.Blobs;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Globalization;
 
 namespace OpenAI_Embeddings
 {
@@ -428,7 +429,7 @@ namespace OpenAI_Embeddings
             //persistToDatabaseAndJson.LinkTo(printEnrichedDocument, dataFlowLinkOptions);
 
             // TPL: Start the producer by feeding it a list of documents
-            var enrichmentProducer = ProduceOpenAis(enrichmentPipeline, ProjectOpenAiService.GetDocuments());
+            var enrichmentProducer = ProduceOpenAis(enrichmentPipeline, ProjectOpenAiService.GetDocuments(blobConnectionString));
 
             // TPL: Since this is an asynchronous Task process, wait for the producer to finish putting all the messages on the queue
             // Works when queue is limited and not a "forever" queue

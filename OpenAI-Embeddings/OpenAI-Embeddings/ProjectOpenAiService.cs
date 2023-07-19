@@ -10,9 +10,9 @@ namespace OpenAI_Embeddings
 {
     public static class ProjectOpenAiService
     {
-        public static List<ProjectOpenAi> GetDocuments()
+        public static List<ProjectOpenAi> GetDocuments(string connection)
         {
-            BlobServiceClient blobServiceClient = new BlobServiceClient("DefaultEndpointsProtocol=https;AccountName=docfileprocessor;AccountKey=UEZX6OLm94afFkZkowkbV9ytqNCu77Z+AoB0u1VJ83d6OR5pz/Ahc8thQ8dJdvQMrn4O+9L6fAZ5+AStDxuGMg==;EndpointSuffix=core.windows.net");
+            BlobServiceClient blobServiceClient = new BlobServiceClient(connection);
 
             // Get a reference to the container
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient("processed");
