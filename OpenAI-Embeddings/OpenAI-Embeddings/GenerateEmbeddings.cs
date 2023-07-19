@@ -1,7 +1,6 @@
 using System.Text;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-
 using Azure.AI.OpenAI;
 using OpenAI_Embeddings.Classes;
 using Microsoft.Data.SqlClient;
@@ -14,23 +13,18 @@ using Microsoft.SemanticKernel.Orchestration;
 using Microsoft.SemanticKernel.SemanticFunctions;
 using Newtonsoft.Json;
 using SharpToken;
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.Intrinsics.Arm;
-using System.Text.Json;
-using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
+using Azure.Storage.Blobs;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
 namespace OpenAI_Embeddings
 {
     public class GenerateEmbeddings
     {
         private readonly ILogger _logger;
-
+        private string blobConnectionString;
         public GenerateEmbeddings(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<GenerateEmbeddings>();
@@ -48,6 +42,7 @@ namespace OpenAI_Embeddings
             IConfiguration configuration = configurationBuilder.AddUserSecrets<Program>().Build();
 
             string connectionString = configuration.GetSection("SQL")["SqlConnection"];
+            blobConnectionString = configuration.GetSection("BlobConnString")["BlobConnectionStrings"];
             var openAIAPIKey = configuration.GetSection("OpenAI")["APIKey"];
             var azureOpenAIAPIKey = configuration.GetSection("AzureOpenAI")["APIKey"];
 
@@ -246,7 +241,7 @@ namespace OpenAI_Embeddings
                             command.ExecuteNonQuery();
                         }
                     }
-
+                    MoveToAppropriateContainer(name, myBlob);
                     connection.Close();
                 }
                 return enrichedDocument;
@@ -474,5 +469,32 @@ namespace OpenAI_Embeddings
             //Console.WriteLine("Total Text Tokens Processed: " + totalTokenLength.ToString("N0"));
             //Console.WriteLine("Total Text Length Processed: " + totalTextLength.ToString("N0"));
         }
+        private async Task MoveToAppropriateContainer(string name, string data)
+        {
+            // name is the actual file name
+            // data will contain the extracted text
+            
+            BlobServiceClient sourceBlobServiceClient = new BlobServiceClient(blobConnectionString);
+            BlobContainerClient sourceContainerClient = sourceBlobServiceClient.GetBlobContainerClient("archived");
+
+            byte[] byteArray = Encoding.UTF8.GetBytes(data);
+            using (var stream = new MemoryStream(byteArray))
+            {
+                sourceContainerClient.UploadBlob(name, stream);
+            }
+
+            try
+            {
+                BlobContainerClient sourceDeleteContainerClient = sourceBlobServiceClient.GetBlobContainerClient("processed");
+                BlobClient blobClient = sourceDeleteContainerClient.GetBlobClient(name);
+                await blobClient.DeleteAsync();
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+       
     }
 }
