@@ -29,9 +29,9 @@ namespace OpenAI_BlobProcessing
         [Function("BlobProcess")]
         public async Task Run([BlobTrigger("input/{name}", Connection = "BlobConnectionString")] string myBlob, string name)
         {
-            AppSettings appSettings = GetAppSettings();
-            sourceBlobServiceClient = new BlobServiceClient(appSettings.BlobConnectionString);
-            BlobContainerClient sourceContainerClient = sourceBlobServiceClient.GetBlobContainerClient(appSettings.BlobInputContainer);
+            
+            sourceBlobServiceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("BlobConnectionString"));
+            BlobContainerClient sourceContainerClient = sourceBlobServiceClient.GetBlobContainerClient(Environment.GetEnvironmentVariable("BlobInputContainer"));
 
             /*
              1. Determine the Type
@@ -196,14 +196,6 @@ namespace OpenAI_BlobProcessing
 
                 throw;
             }
-        }
-
-        private static AppSettings GetAppSettings()
-        {
-            string jsonFilePath = "local.settings.json";
-            string jsonContent = File.ReadAllText(jsonFilePath);
-            AppSettings appSettings = JsonSerializer.Deserialize<AppSettings>(jsonContent);
-            return appSettings;
         }
     }
 }

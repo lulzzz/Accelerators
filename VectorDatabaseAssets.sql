@@ -7,18 +7,19 @@ SQL script to build the suporting tables, stored procedures for Project Gutenber
 */
 drop table if exists dbo.ProjectOpenAi;
 CREATE TABLE [dbo].[ProjectOpenAi](
-	[Id] [int] NOT NULL identity(1,1),
-	Author [varchar](100) NOT NULL,
-	Title [varchar](100) NOT NULL,
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[Source] [varchar](100) NOT NULL,
+	[Document] [varchar](100) NOT NULL,
 	[Url] [varchar](200) NOT NULL,
-	Paragraph [varchar](6000) NOT NULL,
-	ParagraphEmbeddings varchar(max) NOT NULL
- CONSTRAINT pkProjectOpenAi PRIMARY KEY CLUSTERED 
+	[Paragraph] [varchar](6000) NOT NULL,
+	[ParagraphEmbeddings] [varchar](max) NOT NULL,
+ CONSTRAINT [pkProjectOpenAi] PRIMARY KEY CLUSTERED 
 (
-	[id] ASC
+	[Id] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-)
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
+
 
 /*
 select * from ProjectOpenAi;

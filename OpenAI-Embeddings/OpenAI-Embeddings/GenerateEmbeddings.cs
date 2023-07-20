@@ -38,14 +38,10 @@ namespace OpenAI_Embeddings
             ////Console.Title = "Machine Intelligence (Text Analytics) with TPL Data Flows & Vector Embeddings";
             var results = string.Empty;
 
-            ConfigurationBuilder configurationBuilder = new ConfigurationBuilder();
-            configurationBuilder.AddJsonFile(@"local.settings.json");
-            IConfiguration configuration = configurationBuilder.AddUserSecrets<Program>().Build();
-
-            string connectionString = configuration.GetSection("SQL")["SqlConnection"];
-            blobConnectionString = configuration.GetSection("BlobConnString")["BlobConnectionStrings"];
-            var openAIAPIKey = configuration.GetSection("OpenAI")["APIKey"];
-            var azureOpenAIAPIKey = configuration.GetSection("AzureOpenAI")["APIKey"];
+            string connectionString = Environment.GetEnvironmentVariable("SqlConnection");
+            blobConnectionString = Environment.GetEnvironmentVariable("BlobConnectionStrings");
+            var openAIAPIKey = Environment.GetEnvironmentVariable("APIKey");
+            var azureOpenAIAPIKey = Environment.GetEnvironmentVariable("APIKey");
 
             // START the timer
             Stopwatch stopwatch = new Stopwatch();
@@ -352,7 +348,7 @@ namespace OpenAI_Embeddings
 
                 // Azure OpenAI
                 var semanticKernel = Kernel.Builder.Build();
-                semanticKernel.Config.AddAzureTextCompletionService("text-davinci-003-demo", configuration.GetSection("AzureEndpoint")["Endpoint"], openAIAPIKey);
+                semanticKernel.Config.AddAzureTextCompletionService("text-davinci-003-demo", Environment.GetEnvironmentVariable("Endpoint"), openAIAPIKey);
 
                 string answerQuestionContext = """
                     Answer the following question based on the context paragraph below: 
