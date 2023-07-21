@@ -19,8 +19,7 @@ namespace OpenAI_BlobProcessing
     {
         private readonly ILogger _logger;
         private BlobContainers containers = new BlobContainers("input", "archived", "processed", "fault");
-        private BlobServiceClient sourceBlobServiceClient = null;
-
+        
         public BlobProcessor(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<BlobProcessor>();
@@ -29,8 +28,8 @@ namespace OpenAI_BlobProcessing
         [Function("BlobProcess")]
         public async Task Run([BlobTrigger("input/{name}", Connection = "BlobConnectionString")] string myBlob, string name)
         {
-            
-            sourceBlobServiceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("BlobConnectionString"));
+
+            BlobServiceClient sourceBlobServiceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("BlobConnectionString"));
             BlobContainerClient sourceContainerClient = sourceBlobServiceClient.GetBlobContainerClient(Environment.GetEnvironmentVariable("BlobInputContainer"));
 
             /*
@@ -47,47 +46,47 @@ namespace OpenAI_BlobProcessing
             switch (extension)
             {
                 case ".pdf":
-                    await ProcessPDFDoc(name, sourceContainerClient);
+                    await ProcessPDFDoc(name, sourceContainerClient, sourceBlobServiceClient);
                     break;
                 case ".docx":
-                    await ProcessWordDoc(name, sourceContainerClient);
+                    await ProcessWordDoc(name, sourceContainerClient, sourceBlobServiceClient);
                     break;
                 case ".txt":
-                    await ProcessTextDoc(name, myBlob);
+                    await ProcessTextDoc(name, myBlob, sourceBlobServiceClient);
                     break;
                 case ".sql":
-                    await ProcessTextDoc(name, myBlob);
+                    await ProcessTextDoc(name, myBlob, sourceBlobServiceClient);
                     break;
                 case ".json":
-                    await ProcessTextDoc(name, myBlob);
+                    await ProcessTextDoc(name, myBlob, sourceBlobServiceClient);
                     break;
                 case ".html":
-                    await ProcessTextDoc(name, myBlob);
+                    await ProcessTextDoc(name, myBlob, sourceBlobServiceClient);
                     break;
                 case ".css":
-                    await ProcessTextDoc(name, myBlob);
+                    await ProcessTextDoc(name, myBlob, sourceBlobServiceClient);
                     break;
                 case ".js":
-                    await ProcessTextDoc(name, myBlob);
+                    await ProcessTextDoc(name, myBlob, sourceBlobServiceClient);
                     break;
                 case ".csv":
-                    await ProcessTextDoc(name, myBlob);
+                    await ProcessTextDoc(name, myBlob, sourceBlobServiceClient);
                     break;
                 default:
-                    MoveToAppropriateContainer(name, containers.Fault, null);
+                    MoveToAppropriateContainer(name, containers.Fault, null, sourceBlobServiceClient);
                     break;
             }            
 
         }
 
-        private async Task ProcessTextDoc(string name, string myBlob)
+        private async Task ProcessTextDoc(string name, string myBlob, BlobServiceClient sourceBlobServiceClient)
         {
             _logger.LogInformation("Starting processing of Text document: " + name);
-            MoveToAppropriateContainer(name, "processed", myBlob);
+            MoveToAppropriateContainer(name, "processed", myBlob, sourceBlobServiceClient);
 
         }
 
-        private async Task ProcessWordDoc(string name, BlobContainerClient sourceContainerClient)
+        private async Task ProcessWordDoc(string name, BlobContainerClient sourceContainerClient, BlobServiceClient sourceBlobServiceClient)
         {           
             _logger.LogInformation("Starting processing of Word document: " + name);
             try
@@ -115,17 +114,17 @@ namespace OpenAI_BlobProcessing
                     }
                 }
 
-                MoveToAppropriateContainer(name, "processed", extractedText.ToString());
+                MoveToAppropriateContainer(name, "processed", extractedText.ToString(), sourceBlobServiceClient);
             }
             catch (Exception)
             {
-                MoveToAppropriateContainer(name, "fault", null);
+                MoveToAppropriateContainer(name, "fault", null, sourceBlobServiceClient);
             }
 
 
         }
 
-        private async Task ProcessPDFDoc(string name, BlobContainerClient sourceContainerClient)
+        private async Task ProcessPDFDoc(string name, BlobContainerClient sourceContainerClient, BlobServiceClient sourceBlobServiceClient)
         {
             _logger.LogInformation("Starting processing of PDF document: " + name);           
             try
@@ -148,16 +147,16 @@ namespace OpenAI_BlobProcessing
                     }
                     pdfReader.Close();
                 }
-                MoveToAppropriateContainer(name, "processed",extractedText.ToString());               
+                MoveToAppropriateContainer(name, "processed",extractedText.ToString(), sourceBlobServiceClient);               
             }
             catch (Exception)
             {                
-                MoveToAppropriateContainer(name, "fault", null);
+                MoveToAppropriateContainer(name, "fault", null, sourceBlobServiceClient);
             }
             
         }
 
-        private async Task MoveToAppropriateContainer(string name , string container,string data)
+        private async Task MoveToAppropriateContainer(string name , string container,string data, BlobServiceClient sourceBlobServiceClient)
         {
             // name is the actual file name
             // data will contain the extracted text
