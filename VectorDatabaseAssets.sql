@@ -83,8 +83,8 @@ order by
 
 select 
     a.Id,
-    a.Title,
-	a.Author,
+    a.Document,
+	a.Source,
 	a.Paragraph,
     --a.Url,
     r.cosine_distance as CosineDistance

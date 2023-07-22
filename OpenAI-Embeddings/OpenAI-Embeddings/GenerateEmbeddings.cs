@@ -25,7 +25,6 @@ namespace OpenAI_Embeddings
     public class GenerateEmbeddings
     {
         private readonly ILogger _logger;
-        private string blobConnectionString;
         public GenerateEmbeddings(ILoggerFactory loggerFactory)
         {
             _logger = loggerFactory.CreateLogger<GenerateEmbeddings>();
@@ -39,7 +38,7 @@ namespace OpenAI_Embeddings
             var results = string.Empty;
 
             string connectionString = Environment.GetEnvironmentVariable("SqlConnection");
-            blobConnectionString = Environment.GetEnvironmentVariable("BlobConnectionStrings");
+            string blobConnectionString = Environment.GetEnvironmentVariable("BlobConnectionStrings");
             var openAIAPIKey = Environment.GetEnvironmentVariable("APIKey");
             var azureOpenAIAPIKey = Environment.GetEnvironmentVariable("APIKey");
 
@@ -471,7 +470,7 @@ namespace OpenAI_Embeddings
             // name is the actual file name
             // data will contain the extracted text
             
-            BlobServiceClient sourceBlobServiceClient = new BlobServiceClient(blobConnectionString);
+            BlobServiceClient sourceBlobServiceClient = new BlobServiceClient(Environment.GetEnvironmentVariable("BlobConnectionStrings"));
             BlobContainerClient sourceContainerClient = sourceBlobServiceClient.GetBlobContainerClient("archived");
 
             byte[] byteArray = Encoding.UTF8.GetBytes(data);
