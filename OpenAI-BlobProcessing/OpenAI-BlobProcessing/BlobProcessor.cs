@@ -66,6 +66,7 @@ namespace OpenAI_BlobProcessing
             {
                 case ".pdf":
                     await ProcessPDFDoc(name, sourceContainerClient, sourceBlobServiceClient);
+                    
                     break;
                 case ".docx":
                     await ProcessWordDoc(name, sourceContainerClient, sourceBlobServiceClient);
@@ -167,6 +168,7 @@ namespace OpenAI_BlobProcessing
                     }
                     pdfReader.Close();
                 }
+                
                 MoveToAppropriateContainer(name, "processed", extractedText.ToString(), sourceBlobServiceClient);
             }
             catch (Exception)
@@ -303,7 +305,17 @@ namespace OpenAI_BlobProcessing
 
                 queue.Complete();
             }
+            var printEnrichedDocument = new ActionBlock<EnrichedDocument>(enrichedDocument =>
+            {
+                //Console.ForegroundColor = ConsoleColor.Green;
+                //Console.WriteLine("\"{0}\" | Text Size: {1} | Word Count: {2} | Word Count Removed Stop Words: {3}",
+                //   enrichedDocument.ID,
+                //   enrichedDocument.Text.Length.ToString(),
+                //   enrichedDocument.WordTokens.Length.ToString(),
+                //   enrichedDocument.WordTokensRemovedStopWords.Length.ToString());
 
+                //Console.ForegroundColor = ConsoleColor.Green;
+            });
             // TPL Block: Download the requested OpenAI resources as a text string
             var downloadDocumentText = new TransformBlock<EnrichedDocument, EnrichedDocument>(async enrichedDocument =>
             {
@@ -558,21 +570,28 @@ namespace OpenAI_BlobProcessing
             }
 
             // TPL Pipeline: Build the pipeline workflow graph from the TPL Blocks
+            
             var enrichmentPipeline = new BufferBlock<EnrichedDocument>(dataFlowBlockOptions);
+            await Task.Delay(TimeSpan.FromSeconds(1));
             enrichmentPipeline.LinkTo(downloadDocumentText, dataFlowLinkOptions);
+            await Task.Delay(TimeSpan.FromSeconds(1));
             downloadDocumentText.LinkTo(chunkedLinesEnrichment, dataFlowLinkOptions);
+            await Task.Delay(TimeSpan.FromSeconds(1));
             chunkedLinesEnrichment.LinkTo(machineLearningEnrichment, dataFlowLinkOptions);
+            await Task.Delay(TimeSpan.FromSeconds(1));
             machineLearningEnrichment.LinkTo(retrieveEmbeddings, dataFlowLinkOptions);
+            await Task.Delay(TimeSpan.FromSeconds(1));
             retrieveEmbeddings.LinkTo(persistToDatabaseAndJson, dataFlowLinkOptions);
-            //persistToDatabaseAndJson.LinkTo(printEnrichedDocument, dataFlowLinkOptions);
-
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            persistToDatabaseAndJson.LinkTo(printEnrichedDocument, dataFlowLinkOptions);
+            await Task.Delay(TimeSpan.FromSeconds(1));
             // TPL: Start the producer by feeding it a list of documents
             var enrichmentProducer = ProduceOpenAis(enrichmentPipeline, ProjectOpenAiService.GetDocuments(Environment.GetEnvironmentVariable("BlobConnectionString")));
-
+            await Task.Delay(TimeSpan.FromSeconds(1));
             // TPL: Since this is an asynchronous Task process, wait for the producer to finish putting all the messages on the queue
             // Works when queue is limited and not a "forever" queue
             await Task.WhenAll(enrichmentProducer);
-            
+            await Task.Delay(TimeSpan.FromSeconds(1));
             // Search the Vectors Index, then answer the question using Semantic Kernel
             var searchMessagePipeline = new BufferBlock<SearchMessage>(dataFlowBlockOptions);
             searchMessagePipeline.LinkTo(retrieveEmbeddingsForSearch, dataFlowLinkOptions);
@@ -606,7 +625,7 @@ namespace OpenAI_BlobProcessing
                 int aaa = 12;
             }
 
-
+            await Task.Delay(TimeSpan.FromSeconds(1));
             // TPL: Wait for the last block in the pipeline to process all messages.
             answerQuestionWithOpenAI.Completion.Wait();
             stopwatch.Stop();
