@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
@@ -19,6 +19,15 @@
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" Version="1.10.0" />
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="6.0.1" />
+	  <PackageReference Include="Azure.AI.OpenAI" Version="1.0.0-beta.5" />
+	  <PackageReference Include="Azure.Storage.Blobs" Version="12.17.0" />
+	  <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.1" />
+	  <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0-preview.5.23280.8" />
+	  <PackageReference Include="Microsoft.SemanticKernel" Version="0.16.230615.1-preview" />
+	  <PackageReference Include="SharpToken" Version="1.0.28" />
+	  <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+	  <PackageReference Include="System.Threading.Tasks.Dataflow" Version="8.0.0-preview.5.23280.8" />
+	  <PackageReference Include="Microsoft.ML" Version="3.0.0-preview.23266.6" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -31,5 +40,9 @@
   </ItemGroup>
   <ItemGroup>
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="EnrichedDocuments\" />
+    <Folder Include="SQL\" />
   </ItemGroup>
 </Project>
