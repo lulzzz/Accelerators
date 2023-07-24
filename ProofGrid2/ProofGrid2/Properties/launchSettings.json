@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "ProofGrid2": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7027",
-      "launchBrowser": false
-    }
-  }
-}

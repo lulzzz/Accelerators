@@ -1,0 +1,36 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore environment variables
+.env
+.env.local
+
+# Ignore build output
+build/
+dist/
+
+# Ignore temporary or cache files
+.cache/
+.eslintcache/
+
+# Ignore coverage reports
+coverage/
+
+# Ignore macOS-specific files
+.DS_Store
+
+# Ignore log files
+*.log
+*.log.*
+
+# Ignore package manager error logs
+yarn-error.log
+npm-debug.log
+
+# Ignore IDE-specific files
+.idea/
+.vscode/
+
+# Ignore Vim swap files
+*.swp
+*.swo

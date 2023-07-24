@@ -1,0 +1,27 @@
+﻿[SUMMARIZATION RULES]
+The input is JSON. 
+Take the "Ask" parameter and create a concise Cognitive query filter and populate the "queryFilter" property in the JSON object.
+If the "History" property is polutated, make sure it retains it's value.
+If the "History" property is NOT populated, make sure it is Initialize to an empty string.
+Initialize the "MetaPrompt" propert to an empty string.
+Initialize the "Contents" propert to an empty string.
+Initialize the "Citations" propert to an empty string.
+
+Return the updated JSON data.
+
+
+[BANNED PHRASES]
+This article
+This document
+This page
+This material
+[END LIST]
+
+Summarize:
+What does engineer do?
++++++
+"Engineer" role responsibilities
+
+Summarize this
+{{$input}}
++++++
