@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "OpenAI_Embeddings": {
-      "commandName": "Project",
-      "commandLineArgs": "--port 7167",
-      "launchBrowser": false
-    }
-  }
-}
