@@ -606,6 +606,7 @@ namespace OpenAI_BlobProcessing
             BlobContainerClient sourceContainerClienta = sourceBlobServiceClienta.GetBlobContainerClient("archived");
 
             byte[] byteArraya = Encoding.UTF8.GetBytes(data);
+            name = name.ToLower().Replace(".pdf", ".txt").Replace(".docx", ".txt").Replace(".sql", ".txt").Replace(".json", ".txt").Replace(".html", ".txt").Replace(".css", ".txt").Replace(".js", ".txt");
             using (var stream = new MemoryStream(byteArraya))
             {
                 sourceContainerClienta.UploadBlob(name, stream);

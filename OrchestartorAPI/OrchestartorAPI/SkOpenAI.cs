@@ -38,64 +38,75 @@ namespace OrchestartorAPI
         [Function("openAI")]
         public async Task<string> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequestData req)
         {
-            Log(_logger, "Semantic Kernel Chat App");
-           
-            var requestParams = JsonConvert.DeserializeObject<RequestModel>(await ReadBodyAsStringAsync(req.Body));
-           
-            Log(_logger, "Request Params: " +requestParams);
-            var bag = new Suitcase() { Ask = requestParams.question };           
-            SetEnvironmentVariables(bag, requestParams);
-           
-            if (bag.Ask.Contains(@"/admin"))
+            try
             {
-                _logger.LogInformation("Admin Mode");
-                AdminMode(bag);
+
+                Log(_logger, "Semantic Kernel Chat App");
+
+                var requestParams = JsonConvert.DeserializeObject<RequestModel>(await ReadBodyAsStringAsync(req.Body));
+
+                Log(_logger, "Request Params: " + requestParams);
+                var bag = new Suitcase() { Ask = requestParams.question };
+                SetEnvironmentVariables(bag, requestParams);
+
+                if (bag.Ask.Contains(@"/admin"))
+                {
+                    _logger.LogInformation("Admin Mode");
+                    AdminMode(bag);
+                }
+
+                var myKernel = GetGpt4Kernel(bag);
+
+                ConnectionMultiplexer redisConnection = GetRedisConnection(bag);
+                IDatabase redisDb = redisConnection.GetDatabase();
+
+                await GetMessagesFromCache(redisDb, requestParams, bag);
+                bag.QueryFilter = await GetQueryString(myKernel, redisDb, requestParams, bag);
+                Log(_logger, bag.QueryFilter);
+
+                var myCognitiveSkill = myKernel.ImportSkill(new CognitiveSearchSkill(), "CognitiveSearchSkill");
+                var myVectorSkill = myKernel.ImportSkill(new VectorSearchSkill(), "VectorSearchSkill");
+                var myCreatePromptSkill = myKernel.ImportSkill(new CreatePromptSkill(), "CreatePrompt");
+
+                bag = JsonConvert.DeserializeObject<Suitcase>((await myKernel.RunAsync(
+                                                                     new ContextVariables(JsonConvert.SerializeObject(bag)),
+                                                                     myVectorSkill["ProcessQuery"],
+                                                                     //myCognitiveSkill["ProcessQuery"],
+                                                                     myCreatePromptSkill["CreatePrompt"])).ToString());
+
+                //var planner = new SequentialPlanner(myKernel);
+                //var plan = await planner.CreatePlanAsync("Is the data current?");
+
+                //// Execute the plan
+                //var result = await plan.InvokeAsync();
+
+                //Console.WriteLine("Plan results:");
+                //Console.WriteLine(result.Result);
+
+
+
+                var reply = await GetChat(myKernel, bag);
+
+                var response = req.CreateResponse(HttpStatusCode.OK);
+
+                if (reply.StartsWith("I'm sorry"))
+                {
+                    bag.Citations = string.Empty;
+                }
+
+                response.WriteString(reply + " " + bag.Citations);
+                await UpdateCache(redisDb, requestParams, bag);
+                //await UpdateLog(bag, requestParams);
+                var d = new ResultData() { Data = reply + " " + bag.Citations };
+                return JsonConvert.SerializeObject(d);
+
             }
-                        
-            var myKernel = GetGpt4Kernel(bag);
-            
-            ConnectionMultiplexer redisConnection = GetRedisConnection(bag);
-            IDatabase redisDb = redisConnection.GetDatabase();
-                        
-            await GetMessagesFromCache(redisDb, requestParams, bag);
-            bag.QueryFilter =  await GetQueryString(myKernel, redisDb, requestParams, bag);
-            Log(_logger, bag.QueryFilter);
-      
-            var myCognitiveSkill = myKernel.ImportSkill(new CognitiveSearchSkill(), "CognitiveSearchSkill");
-            var myVectorSkill = myKernel.ImportSkill(new VectorSearchSkill(), "VectorSearchSkill");
-            var myCreatePromptSkill = myKernel.ImportSkill(new CreatePromptSkill(), "CreatePrompt");
-         
-            bag = JsonConvert.DeserializeObject<Suitcase>((await myKernel.RunAsync(
-                                                                 new ContextVariables(JsonConvert.SerializeObject(bag)),
-                                                                 myVectorSkill["ProcessQuery"],
-                                                                 //myCognitiveSkill["ProcessQuery"],
-                                                                 myCreatePromptSkill["CreatePrompt"])).ToString());
-
-            //var planner = new SequentialPlanner(myKernel);
-            //var plan = await planner.CreatePlanAsync("Is the data current?");
-
-            //// Execute the plan
-            //var result = await plan.InvokeAsync();
-
-            //Console.WriteLine("Plan results:");
-            //Console.WriteLine(result.Result);
-
-
-
-            var reply = await GetChat(myKernel, bag);
-           
-            var response = req.CreateResponse(HttpStatusCode.OK);
-
-            if (reply.StartsWith("I'm sorry"))
+            catch (Exception ex)
             {
-                bag.Citations = string.Empty;
-            }
+                Log(_logger, "Exception: " + ex.Message);
+                return null;
 
-            response.WriteString(reply + " " + bag.Citations);
-            await UpdateCache(redisDb, requestParams, bag);
-            await UpdateLog(bag, requestParams);
-            var d = new ResultData() { Data = reply + " " + bag.Citations };           
-            return JsonConvert.SerializeObject(d);
+            }
         }
 
         private void AdminMode(Suitcase bag)
