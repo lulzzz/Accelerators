@@ -32,7 +32,7 @@ const MyTable = () => {
         //'x-functions-key': '',
       },
       body: JSON.stringify({
-        quid: userName,
+        guid: userName,
         question: question
       }),
     });
@@ -58,7 +58,7 @@ const MyTable = () => {
     }
 
     // Use the SAS token in the URL to authenticate the request
-    const sasToken = '?sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiytfx&se=2023-07-24T23:35:16Z&st=2023-07-24T15:35:16Z&spr=https&sig=dggG2p%2Fzw2UnvxR1wXzDUtPokUoJZErVeW%2F83ngdVD4%3D'; // Replace with the SAS token obtained from the server-side
+    const sasToken = '?sv=2022-11-02&ss=bfqt&srt=co&sp=rwdlacupiytfx&se=2023-07-25T22:06:44Z&st=2023-07-25T14:06:44Z&spr=https&sig=e1%2FZ1Te%2F4%2FVj5qV9sd1%2F99Q0zEfHOjU5kccSHU0ror8%3D'; // Replace with the SAS token obtained from the server-side
 
     // Initialize the BlobServiceClient with an AnonymousCredential (useful for browser environments)
     const blobServiceClient = new BlobServiceClient(

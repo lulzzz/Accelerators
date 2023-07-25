@@ -11,6 +11,7 @@ namespace OrchestartorAPI.Models
     {
         public string History { get; set; }
         public string QueryFilter { get; set; }
+        public string guid { get; set; }
         public string Ask { get; set; }
         public string MetaPrompt { get; set; }
         public string Contents { get; set; }

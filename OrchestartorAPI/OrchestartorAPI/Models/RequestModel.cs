@@ -8,8 +8,9 @@ namespace OrchestartorAPI.Models
 {
     internal class RequestModel
     {
-        public string question { get; set; }
         public string guid { get; set; }
+        public string question { get; set; }
+       
         public string MetaPrompt { get; set; }
         // Environment Variables
         public string OpenAI_Key { get; set; }

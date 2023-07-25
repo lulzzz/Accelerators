@@ -42,11 +42,10 @@ namespace OrchestartorAPI
             {
 
                 Log(_logger, "Semantic Kernel Chat App");
-
                 var requestParams = JsonConvert.DeserializeObject<RequestModel>(await ReadBodyAsStringAsync(req.Body));
 
                 Log(_logger, "Request Params: " + requestParams);
-                var bag = new Suitcase() { Ask = requestParams.question };
+                var bag = new Suitcase() { Ask = requestParams.question, guid = requestParams.guid };
                 SetEnvironmentVariables(bag, requestParams);
 
                 if (bag.Ask.Contains(@"/admin"))
@@ -94,10 +93,10 @@ namespace OrchestartorAPI
                     bag.Citations = string.Empty;
                 }
 
-                response.WriteString(reply + " " + bag.Citations);
+                response.WriteString(reply );
                 await UpdateCache(redisDb, requestParams, bag);
                 //await UpdateLog(bag, requestParams);
-                var d = new ResultData() { Data = reply + " " + bag.Citations };
+                var d = new ResultData() { Data = reply  };
                 return JsonConvert.SerializeObject(d);
 
             }
@@ -479,10 +478,11 @@ namespace OrchestartorAPI
         private async Task UpdateCache(IDatabase redisDb, RequestModel model, Suitcase bag)
         {
             // Delete the existing _cache for this key
-            redisDb.KeyDelete(model.guid);
+            redisDb.KeyDelete(bag.guid);
+            
             
             // PREFIX ALL CACHE GUIDS WITH "OPEN_AI-"            
-            redisDb.StringSetAsync("OPEN_AI-" + model.guid, bag.History);
+            redisDb.StringSetAsync("OPEN_AI-" + bag.guid, bag.History);
 
         }
 
