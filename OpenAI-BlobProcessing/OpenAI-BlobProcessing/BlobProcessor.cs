@@ -1,8 +1,8 @@
 using System.Text;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using iTextSharp.text.pdf;
-using iTextSharp.text.pdf.parser;
+//using iTextSharp.text.pdf;
+//using iTextSharp.text.pdf.parser;
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs;
 using System.Text.Json;
@@ -31,6 +31,8 @@ using System.Threading.Tasks.Dataflow;
 using Azure.Storage.Blobs;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Azure.AI.OpenAI;
+using iTextSharp.text.pdf;
+using iTextSharp.text.pdf.parser;
 
 namespace OpenAI_BlobProcessing
 {
@@ -163,12 +165,12 @@ namespace OpenAI_BlobProcessing
 
                     PdfReader pdfReader = new PdfReader(pdfStream);
                     for (int page = 1; page <= pdfReader.NumberOfPages; page++)
-                    {
+                    {                        
                         extractedText.AppendLine(PdfTextExtractor.GetTextFromPage(pdfReader, page));
                     }
                     pdfReader.Close();
                 }
-                
+
                 MoveToAppropriateContainer(name, "processed", extractedText.ToString(), sourceBlobServiceClient);
             }
             catch (Exception)
@@ -411,6 +413,10 @@ namespace OpenAI_BlobProcessing
                 //Console.WriteLine("Persisting to DB & converting to JSON file: '{0}'", enrichedDocument.Document);
 
                 // 1 - Save to SQL Server
+
+                // COGNITIVE INDEX - UPLOAD HERE -- enrichedDocument.Paragraphs[i]
+                // THEN RETURN
+
                 using (SqlConnection connection = new SqlConnection(Environment.GetEnvironmentVariable("SqlConnection")))
                 {
                     connection.Open();
