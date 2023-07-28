@@ -67,8 +67,7 @@ namespace OpenAI_BlobProcessing
             switch (extension)
             {
                 case ".pdf":
-                    await ProcessPDFDoc(name, sourceContainerClient, sourceBlobServiceClient);
-                    
+                    await ProcessPDFDoc(name, sourceContainerClient, sourceBlobServiceClient);                    
                     break;
                 case ".docx":
                     await ProcessWordDoc(name, sourceContainerClient, sourceBlobServiceClient);
